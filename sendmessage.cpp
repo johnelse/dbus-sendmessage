@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     DBusPendingCall* pending;
 
     msg = dbus_message_new_method_call("org.freedesktop.UDisks2",
-            "/org/freedesktop/UDisks2/block_device/sda",
+            "/org/freedesktop/UDisks2/block_devices/sda",
             "org.freedesktop.DBus.Properties",
             "Get");
     if (NULL == msg)
@@ -68,8 +68,7 @@ int main(int argc, char** argv)
     dbus_message_unref(msg);
 
     // get the reply
-    bool stat;
-    dbus_uint32_t level;
+    char* stat;
 
     // block until we receive a reply
     dbus_pending_call_block(pending);
@@ -87,19 +86,12 @@ int main(int argc, char** argv)
     // read the parameters
     if (!dbus_message_iter_init(msg, &args))
     fprintf(stderr, "Message has no arguments!\n");
-    else if (DBUS_TYPE_BOOLEAN != dbus_message_iter_get_arg_type(&args))
-    fprintf(stderr, "Argument is not boolean!\n");
+    else if (DBUS_TYPE_VARIANT != dbus_message_iter_get_arg_type(&args))
+    fprintf(stderr, "Argument is not a variant as a string!\n");
     else
     dbus_message_iter_get_basic(&args, &stat);
 
-    if (!dbus_message_iter_next(&args))
-    fprintf(stderr, "Message has too few arguments!\n");
-    else if (DBUS_TYPE_UINT32 != dbus_message_iter_get_arg_type(&args))
-    fprintf(stderr, "Argument is not int!\n");
-    else
-    dbus_message_iter_get_basic(&args, &level);
-
-    printf("Got Reply: %d, %d\n", stat, level);
+    printf("Got Reply: %s\n", stat);
 
     // free reply and close connection
     dbus_message_unref(msg);
